@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>duck-vpn</title>
+<style>
+  :root {
+    --bg: #f6f5f1; --card: #ffffff; --text: #1d1d1b; --muted: #6b6a65;
+    --line: #e4e2db; --accent: #e8a317; --accent-text: #1d1d1b;
+    --good: #2f7d4a; --warn: #a86a00; --bad: #b3402f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #151514; --card: #1f1f1d; --text: #ecebe6; --muted: #9b9a94;
+      --line: #33322f; --accent: #f0b43a; --accent-text: #151514;
+      --good: #6cc48a; --warn: #e3a94a; --bad: #e8806f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 640px; margin: 0 auto; padding: 20px 16px 48px; }
+  h1 { font-size: 28px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 20px; }
+  select { width: 100%; font-size: 17px; padding: 12px; border-radius: 10px;
+           border: 1px solid var(--line); background: var(--card); color: var(--text); }
+  .meta { color: var(--muted); font-size: 13px; margin: 8px 0 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+          padding: 14px; margin-bottom: 10px; display: flex; gap: 12px; align-items: center; }
+  .info { flex: 1; min-width: 0; }
+  .host { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .stats { color: var(--muted); font-size: 13px; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 600; margin-top: 4px; }
+  .tag.home { color: var(--good); } .tag.unknown { color: var(--warn); } .tag.flagged { color: var(--bad); }
+  a.dl { background: var(--accent); color: var(--accent-text); text-decoration: none; font-weight: 600;
+         padding: 10px 14px; border-radius: 10px; white-space: nowrap; }
+  details { background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+            padding: 12px 14px; margin-bottom: 16px; }
+  summary { font-weight: 600; cursor: pointer; }
+  ol { padding-left: 20px; margin: 10px 0 4px; }
+  li { margin-bottom: 6px; }
+  .empty { color: var(--muted); text-align: center; padding: 32px 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>🦆 duck-vpn</h1>
+  <p class="sub">Free VPN Gate servers, ranked by how likely they are to get past geo-blocks.</p>
+
+  <details>
+    <summary>How to use this on iPhone</summary>
+    <ol>
+      <li>Install <b>OpenVPN Connect</b> from the App Store (free).</li>
+      <li>Pick a country below and tap <b>Get</b> on the top server.</li>
+      <li>Open the downloaded file and choose <b>OpenVPN</b>, then tap <b>Add</b> and connect.</li>
+      <li>If it won't connect, open OpenVPN Connect <b>Settings → Security Level → Insecure</b>
+        (VPN Gate relays use older ciphers), or try the next server.</li>
+    </ol>
+    <p class="stats">Servers are run by volunteers who can see unencrypted traffic.
+      Use them for unblocking content, not for banking or logins you care about.</p>
+  </details>
+
+  <select id="country" aria-label="Country"></select>
+  <p class="meta" id="meta">Loading servers…</p>
+  <div id="list"></div>
+</main>
+<script>
+  const flag = cc => cc.length === 2
+    ? String.fromCodePoint(...[...cc.toUpperCase()].map(c => 0x1f1a5 + c.charCodeAt(0))) : "";
+  const tag = r => r === true ? ["home", "Home IP · best for streaming"]
+    : r === false ? ["flagged", "Datacentre/proxy IP · often blocked"]
+    : ["unknown", "IP type unknown"];
+  const ago = s => {
+    const m = Math.round((Date.now() / 1000 - s) / 60);
+    return m < 60 ? `${m} min ago` : `${Math.round(m / 60)} h ago`;
+  };
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
+
+  function remember(cc) { try { localStorage.setItem("duck-country", cc); } catch {} }
+  function recall() { try { return localStorage.getItem("duck-country"); } catch { return null; } }
+
+  async function main() {
+    const sel = document.getElementById("country");
+    const list = document.getElementById("list");
+    const meta = document.getElementById("meta");
+    let data;
+    try {
+      data = await (await fetch("servers.json", { cache: "no-cache" })).json();
+    } catch {
+      meta.textContent = "Couldn't load the server list. Try again in a minute.";
+      return;
+    }
+    const byCc = {};
+    for (const s of data.servers) (byCc[s.cc] ??= { name: s.country, servers: [] }).servers.push(s);
+    const codes = Object.keys(byCc).sort((a, b) => byCc[a].name.localeCompare(byCc[b].name));
+    sel.innerHTML = codes.map(cc =>
+      `<option value="${cc}">${flag(cc)} ${esc(byCc[cc].name)} (${byCc[cc].servers.length})</option>`).join("");
+    const saved = recall();
+    if (saved && byCc[saved]) sel.value = saved;
+
+    function render() {
+      const cc = sel.value;
+      remember(cc);
+      const servers = byCc[cc]?.servers ?? [];
+      meta.textContent = `${servers.length} servers · list updated ${ago(data.generated)}`;
+      list.innerHTML = servers.length ? servers.map(s => {
+        const [cls, label] = tag(s.residential);
+        return `<div class="card"><div class="info">
+            <div class="host">${esc(s.host)}</div>
+            <div class="stats">${s.mbps} Mbps · ${s.ping ?? "–"} ms · ${s.proto.toUpperCase()} · up ${s.uptimeDays} d${s.isp ? " · " + esc(s.isp) : ""}</div>
+            <span class="tag ${cls}">${label}</span>
+          </div><a class="dl" href="${esc(s.file)}" download>Get</a></div>`;
+      }).join("") : `<p class="empty">No servers in this country right now.</p>`;
+    }
+    sel.addEventListener("change", render);
+    render();
+  }
+  main();
+</script>
+</body>
+</html>
