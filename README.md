@@ -99,8 +99,9 @@ app. Turning the VPN off and on again doesn't ask again until you restart the ap
 An iPhone can't run duck-vpn's automatic testing: apps that control the VPN need a paid Apple
 developer account. You get two free alternatives:
 
-**A. The web picker (no computer needed).** A GitHub Action rebuilds a phone-friendly server
-list every 2 hours and publishes it on GitHub Pages:
+**A. The web picker (no computer needed).** A GitHub Action builds a phone-friendly server
+list and publishes it on GitHub Pages. It runs only when you start it, so run it again
+whenever the list feels stale:
 
 1. Install **OpenVPN Connect** from the App Store (free).
 2. Open your picker page (`https://lukeabraham24777.github.io/duck-vpn/`), choose a
@@ -124,7 +125,7 @@ Tunnelblick (macOS) and OpenVPN GUI (Windows) if you prefer a GUI.
 
 1. Merge this code into `main`.
 2. In the repo, go to **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-3. Go to **Actions → Publish server picker → Run workflow**.
+3. Go to **Actions → Publish server picker → Run workflow** whenever you want a fresh list.
 
 GitHub Pages is free for **public** repos. On a private repo it needs a paid plan, so either
 make the repo public or host the `site/` folder elsewhere for free (for example, Cloudflare
