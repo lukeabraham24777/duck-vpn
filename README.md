@@ -20,33 +20,39 @@ servers until one works and remembers the winners, so the next run is quick.
 > content, **not** for privacy, banking or logins you care about. Getting around geo-blocks
 > usually breaks a service's terms of use, and accounts can be suspended.
 
-## Windows and macOS: the `duck` command
+## Windows and macOS: the `duck-vpn` command
 
 ### Install
 
-1. **Python 3.9+**: [python.org](https://www.python.org/downloads/). On macOS you can also run
-   `brew install python`.
-2. **OpenVPN 2.5+**
-   - Windows: [OpenVPN community installer](https://openvpn.net/community-downloads/) (default options).
-   - macOS: `brew install openvpn`
-3. **duck-vpn**
-   ```
-   pip install git+https://github.com/lukeabraham24777/duck-vpn
-   ```
+**macOS**
+```
+brew install openvpn pipx
+pipx ensurepath          # then close and reopen Terminal
+pipx install git+https://github.com/lukeabraham24777/duck-vpn
+```
+
+**Windows**: install [Python 3.9+](https://www.python.org/downloads/) and the
+[OpenVPN community client](https://openvpn.net/community-downloads/), then:
+```
+pip install git+https://github.com/lukeabraham24777/duck-vpn
+```
+
+To update later: `pipx upgrade duck-vpn` (macOS) or re-run the `pip install` with `--upgrade`
+(Windows).
 
 OpenVPN needs admin rights to reroute traffic. On **Windows**, run your terminal as
-Administrator. On **macOS**, `duck` asks for your password once with `sudo`.
+Administrator. On **macOS**, duck-vpn asks for your password.
 
 ### Use
 
 ```
-duck countries                         # which countries have servers right now
-duck list japan                        # ranked servers: home IPs first
+duck-vpn countries                         # which countries have servers right now
+duck-vpn list japan                        # ranked servers: home IPs first
 
-duck connect jp                        # connect to the best working server in Japan
-duck connect us --test https://www.example.com/show/123
-duck connect uk --test https://site.example --expect "Play"   # page must contain "Play"
-duck connect kr --home-only            # only try home-IP servers
+duck-vpn connect jp                        # connect to the best working server in Japan
+duck-vpn connect us --test https://www.example.com/show/123
+duck-vpn connect uk --test https://site.example --expect "Play"   # page must contain "Play"
+duck-vpn connect kr --home-only            # only try home-IP servers
 ```
 
 Once connected, duck-vpn waits for you:
@@ -68,6 +74,26 @@ Other options: `--max-tries N` (default 15), `--timeout SECONDS` (default 25), `
 (extra "blocked" wording, repeatable), `-v` (show OpenVPN output), `--refresh` (re-download the
 list now; otherwise it's cached for 15 minutes).
 
+## macOS menu bar app
+
+```
+duck-vpn menubar                 # starts it in the background, a 🦆 appears in the menu bar
+duck-vpn menubar --autostart on  # also start it when you log in
+```
+
+| Menu item | What it does |
+|---|---|
+| **Turn On / Turn Off** (⌘T) | Finds a working server in your chosen country and connects. The icon shows the country (`🦆 JP`) while connected. |
+| **Try Another Server** | Use this when your site is still blocked on the current server. |
+| **Country ▸** | Pick a country. Changing it while connected switches straight over. |
+| **Home IPs Only** | Only try servers on home connections (best for streaming, fewer choices). |
+| **Test Site…** | Optional page that must load before a server counts as working. |
+| **Send Server to iPhone…** | Saves the current server to Downloads and shows it in Finder, ready to AirDrop. |
+
+The first time you turn it on, macOS shows its standard password dialog. That starts a small
+helper with admin rights that only starts and stops OpenVPN, and it quits when you quit the
+app. Turning the VPN off and on again doesn't ask again until you restart the app.
+
 ## iPhone
 
 An iPhone can't run duck-vpn's automatic testing: apps that control the VPN need a paid Apple
@@ -83,12 +109,12 @@ list every 2 hours and publishes it on GitHub Pages:
 4. If it won't connect, go to OpenVPN Connect **Settings → Security Level → Insecure** (VPN Gate
    relays use older ciphers), or try the next server.
 
-**B. Hand over a tested server from your computer.** After `duck connect` finds a working
+**B. Hand over a tested server from your computer.** After `duck-vpn connect` finds a working
 server:
 
 ```
-duck export --last          # writes the .ovpn file that just worked
-duck export japan --count 3 # or the top 3 servers for a country
+duck-vpn export --last          # writes the .ovpn file that just worked
+duck-vpn export japan --count 3 # or the top 3 servers for a country
 ```
 
 AirDrop the file to your iPhone and open it in OpenVPN Connect. The same files work in
@@ -121,8 +147,11 @@ VPN Gate list ──► rank (worked before → home IP → unknown → flagged;
 | `duckvpn/reputation.py` | Home vs datacentre/proxy flags from ip-api.com (cached 24 h) |
 | `duckvpn/openvpn.py` | Run OpenVPN with admin rights; clean shutdown through its management port |
 | `duckvpn/probe.py` | Exit-country check and site test |
-| `duckvpn/ovpn.py` | Config tweaks so OpenVPN 2.5+ accepts VPN Gate's older ciphers |
+| `duckvpn/ovpn.py` | Allow-lists config directives (no scripts or plugins as root) and enables VPN Gate's older ciphers |
 | `duckvpn/state.py` | Remembers good and bad servers |
+| `duckvpn/session.py` | The try-servers-until-one-works loop shared by the CLI and the app |
+| `duckvpn/controller.py`, `menubar.py` | Menu bar app logic and UI ([rumps](https://github.com/jaredks/rumps)) |
+| `duckvpn/helper.py` | Admin helper for the app: only starts and stops OpenVPN |
 | `scripts/build_site.py` + `web/` | The iPhone web picker |
 
 State and cache live in `%APPDATA%\duck-vpn` (Windows) or
@@ -136,4 +165,4 @@ mirror if the main site is blocked where you are.
 python -m unittest discover -s tests -v
 ```
 
-No third-party dependencies. CI runs the tests on Windows, macOS and Linux.
+The CLI has no third-party dependencies; the menu bar app uses rumps (installed automatically on macOS). CI runs the tests on Windows, macOS and Linux.

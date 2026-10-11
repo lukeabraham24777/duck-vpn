@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Stand-in for the openvpn binary used by test_tunnel.
 
 Mimics the parts duck-vpn relies on: prints the ready marker (or a fatal

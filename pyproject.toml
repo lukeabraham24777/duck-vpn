@@ -9,10 +9,13 @@ description = "Find a free VPN Gate server in another country that gets past geo
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
-dependencies = []
+dependencies = [
+    # Menu bar app (macOS only).
+    "rumps>=0.4.0; sys_platform == 'darwin'",
+]
 
 [project.scripts]
-duck = "duckvpn.cli:main"
+duck-vpn = "duckvpn.cli:main"
 
 [tool.setuptools]
 packages = ["duckvpn"]

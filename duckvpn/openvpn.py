@@ -101,6 +101,9 @@ class Tunnel:
         cmd = self.prefix + [
             self.binary,
             "--config", str(cfg),
+            # Comes after --config so it overrides anything in the file: allow
+            # OpenVPN's built-in route/ifconfig calls, never external scripts.
+            "--script-security", "1",
             "--management", "127.0.0.1", str(self._port), str(pw),
             "--connect-retry-max", "1",
             "--connect-timeout", "10",

@@ -16,3 +16,9 @@ jobs:
         with:
           python-version: "3.9"
       - run: python -m unittest discover -s tests -v
+      - name: Build the menu bar app (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          pip install .
+          duck-vpn --version
+          python -c "from duckvpn import menubar; app = menubar.DuckApp(); app.refresh(); print([str(k) for k in app.menu])"

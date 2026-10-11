@@ -182,6 +182,8 @@ class CliTests(unittest.TestCase):
         args = cli.build_parser().parse_args(["connect", "us", "--test", "https://x", "--reject", "a", "--reject", "b"])
         self.assertEqual(args.reject, ["a", "b"])
         self.assertEqual(args.max_tries, 15)
+        self.assertEqual(cli.build_parser().prog, "duck-vpn")
+        self.assertTrue(cli.build_parser().parse_args(["menubar", "--foreground"]).foreground)
 
 
 if __name__ == "__main__":
