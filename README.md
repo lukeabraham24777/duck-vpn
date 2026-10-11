@@ -77,13 +77,13 @@ list now; otherwise it's cached for 15 minutes).
 ## macOS menu bar app
 
 ```
-duck-vpn menubar                 # starts it in the background, a 🦆 appears in the menu bar
+duck-vpn menubar                 # starts it in the background; a duck-with-shield icon appears in the menu bar
 duck-vpn menubar --autostart on  # also start it when you log in
 ```
 
 | Menu item | What it does |
 |---|---|
-| **Turn On / Turn Off** (⌘T) | Finds a working server in your chosen country and connects. The icon shows the country (`🦆 JP`) while connected. |
+| **Turn On / Turn Off** (⌘T) | Finds a working server in your chosen country and connects. The country code (e.g. `JP`) appears next to the icon while connected. |
 | **Try Another Server** | Use this when your site is still blocked on the current server. |
 | **Country ▸** | Pick a country. Changing it while connected switches straight over. |
 | **Home IPs Only** | Only try servers on home connections (best for streaming, fewer choices). |

@@ -19,3 +19,6 @@ duck-vpn = "duckvpn.cli:main"
 
 [tool.setuptools]
 packages = ["duckvpn"]
+
+[tool.setuptools.package-data]
+duckvpn = ["assets/*"]

@@ -13,7 +13,10 @@ from . import ovpn, paths
 from .controller import Controller
 from .helper import HelperClient
 
-ICON_OFF = "🦆"
+# White duck holding a shield on a transparent background (40px for Retina,
+# shown at 20pt). As a template image macOS tints it to match the menu bar:
+# white on dark menu bars, black on light ones.
+ICON = str(Path(__file__).with_name("assets") / "menubar.png")
 LAUNCH_AGENT = Path.home() / "Library" / "LaunchAgents" / "com.duckvpn.menubar.plist"
 
 
@@ -35,7 +38,8 @@ def notify(title: str, message: str) -> None:
 
 class DuckApp(rumps.App):
     def __init__(self):
-        super().__init__("duck-vpn", title=ICON_OFF, quit_button=None)
+        super().__init__("duck-vpn", icon=ICON, template=True, quit_button=None)
+        self.title = None
         self.ctl = Controller(helper_factory=HelperClient.launch, notify=notify)
         self._countries_version = -1
         self._country_items: dict[str, rumps.MenuItem] = {}
@@ -73,11 +77,11 @@ class DuckApp(rumps.App):
         snap = self.ctl.snapshot()
         self.status_item.title = snap.status if not snap.exit_ip else f"{snap.status} · {snap.exit_ip}"
         if snap.phase == "on" and snap.server:
-            self.title = f"{ICON_OFF} {snap.server.country_code}"
+            self.title = snap.server.country_code
         elif snap.phase in ("connecting", "stopping"):
-            self.title = f"{ICON_OFF}…"
+            self.title = "…"
         else:
-            self.title = ICON_OFF
+            self.title = None
         self.toggle_item.title = "Turn On" if snap.phase == "off" else "Turn Off"
         self.next_item.set_callback(self.on_next if snap.phase == "on" else None)
         if snap.countries_version != self._countries_version:
@@ -150,7 +154,7 @@ class DuckApp(rumps.App):
         )
 
     def on_quit(self, _):
-        self.title = f"{ICON_OFF}…"
+        self.title = "…"
         self.ctl.shutdown()
         rumps.quit_application()
 

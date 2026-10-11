@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <path id="shield" d="M44 28 L57 32.5 V42 C57 50.5 51.5 56 44 60 C36.5 56 31 50.5 31 42 V32.5 Z"/>
+    <path id="wing" d="M22 40 Q30 36 37 39.5 Q40.5 41.5 39.5 44 Q36 46.5 31 46 Q24 46 22 40 Z"/>
+    <mask id="duckmask" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64">
+      <rect width="64" height="64" fill="#fff"/>
+      <use href="#shield" fill="#000" stroke="#000" stroke-width="4.5" stroke-linejoin="round"/>
+      <circle cx="26.5" cy="15" r="2.6" fill="#000"/>
+    </mask>
+    <mask id="shieldmask" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64">
+      <rect width="64" height="64" fill="#fff"/>
+      <use href="#wing" fill="#000" stroke="#000" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M43 46 L46.5 49.5 L52.5 42" fill="none" stroke="#000" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </mask>
+  </defs>
+  <g fill="#fff" mask="url(#duckmask)">
+    <circle cx="23.5" cy="16.5" r="11"/>
+    <path d="M30.5 13 Q44.5 12 45 17.5 Q44.5 22 30.5 22.5 Z"/>
+    <path d="M14.5 21.5 L30.5 21.5 L32.5 33.5 L12.5 33.5 Z"/>
+    <path d="M2 26 Q9 29.5 13 30.5 Q22 28 33 29.5 Q47 32 47 44.5 Q47 56 33 57 L18 57 Q5 56 4 43.5 Q3.5 35 2 26 Z"/>
+  </g>
+  <g fill="#fff" mask="url(#shieldmask)"><use href="#shield"/></g>
+  <use href="#wing" fill="#fff"/>
+</svg>
